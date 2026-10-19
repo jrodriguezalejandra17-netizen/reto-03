@@ -5,7 +5,7 @@
 
 import * as oc from "./oc.ts"
 import { zodToJsonSchema } from "./schema.ts"
-import type { LlmToolDef } from "../../ports/index.ts"
+import type { LlmToolDef } from "../llm/adapter.ts"
 import type { Herramienta } from "./oc.ts"
 import { appendFileSync, mkdirSync } from "node:fs"
 import { join } from "node:path"

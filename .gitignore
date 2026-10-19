@@ -6,3 +6,4 @@ out-*.log
 out-*.err
 out-server.log
 out-server.err
+.atl/

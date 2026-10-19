@@ -6,14 +6,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs"
 import { join } from "node:path"
 import type { OrdenCompra } from "../domain/types.ts"
-import type { SapPort } from "../ports/index.ts"
+import type { SapAdapter } from "./adapter.ts"
 import type { Maestros } from "../domain/types.ts"
 
 const PRIMER_NUMERO = 4500000001
 
 type OrdenPersistida = { numero_oc: string; fecha: string; orden: OrdenCompra }
 
-export class SapMock implements SapPort {
+export class SapMock implements SapAdapter {
   private readonly dir: string
   private readonly sapDir: string
   private readonly archivo: string

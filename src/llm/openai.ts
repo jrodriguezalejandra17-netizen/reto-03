@@ -5,17 +5,25 @@
  * The API key never leaves this backend process.
  */
 
-import type { LlmMensaje, LlmPort, LlmRespuesta, LlmToolCall, LlmToolDef } from "../../ports/index.ts"
+import type { LlmMensaje, LlmPort, LlmRespuesta, LlmToolCall, LlmToolDef } from "./adapter.ts"
 
 type OpenAiToolCall = {
   id: string
   type: "function"
   function: { name: string; arguments: string }
+  // Google (Gemini 3.x) exige reenviar esta firma al reconstruir el historial de
+  // tool calls; sin ella la API responde 400. En otros proveedores no existe.
+  thought_signature?: string
 }
 
 type OpenAiMensaje =
   | { role: "system" | "user"; content: string }
-  | { role: "assistant"; content: string | null; tool_calls?: OpenAiToolCall[] }
+  | {
+      role: "assistant"
+      content: string | null
+      tool_calls?: OpenAiToolCall[]
+      thought_signature?: string
+    }
   | { role: "tool"; tool_call_id: string; content: string }
 
 type OpenAiRespuesta = {
@@ -88,6 +96,7 @@ export class OpenAiCompatibleLlm implements LlmPort {
         id: tc.id,
         nombre: tc.function.name,
         args: parseArgs(tc.function.arguments),
+        firma: tc.thought_signature ?? mensaje.thought_signature,
       })),
     }
   }
@@ -98,6 +107,9 @@ function aOpenAi(mensaje: LlmMensaje): OpenAiMensaje {
     return { role: "tool", tool_call_id: mensaje.toolCallId, content: mensaje.contenido }
   }
   if (mensaje.rol === "assistant") {
+    // Solo se reenvía la firma si el proveedor la devolvió (Gemini 3.x). Como
+    // JSON.stringify omite `undefined`, los demás proveedores no la ven.
+    const firma = mensaje.toolCalls?.[0]?.firma
     return {
       role: "assistant",
       content: mensaje.contenido,
@@ -105,7 +117,9 @@ function aOpenAi(mensaje: LlmMensaje): OpenAiMensaje {
         id: tc.id,
         type: "function",
         function: { name: tc.nombre, arguments: JSON.stringify(tc.args) },
+        ...(tc.firma ? { thought_signature: tc.firma } : {}),
       })),
+      ...(firma ? { thought_signature: firma } : {}),
     }
   }
   return { role: mensaje.rol, content: mensaje.contenido }

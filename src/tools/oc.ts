@@ -7,13 +7,13 @@
  */
 
 import { z } from "zod"
-import { evaluar } from "../../domain/controls.ts"
-import { construirPayload, ordenCompraSchema } from "../../domain/payload.ts"
-import type { Evaluacion, IntentoControl, OrdenCompra, Paquete } from "../../domain/types.ts"
-import { FixtureSource } from "../../adapters/fixture-source.ts"
-import { OutStore, trazabilidadDe } from "../../adapters/out-store.ts"
-import { SapMock } from "../../adapters/sap-mock.ts"
-import type { Evidencia, Trazabilidad } from "../../ports/index.ts"
+import { evaluar } from "../domain/controls.ts"
+import { construirPayload, ordenCompraSchema } from "../domain/payload.ts"
+import type { Evaluacion, IntentoControl, OrdenCompra, Paquete } from "../domain/types.ts"
+import { FixtureSource } from "../adapters/fixture-source.ts"
+import { OutStore, trazabilidadDe } from "../adapters/out-store.ts"
+import { SapMock } from "../sap/mock.ts"
+import type { Evidencia, Trazabilidad } from "../ports/index.ts"
 
 export type Contexto = { directory: string; sessionId: string }
 

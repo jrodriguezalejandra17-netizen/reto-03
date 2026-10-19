@@ -6,7 +6,7 @@ Agente conversacional que lee el paquete de compra (correo + solicitud + cotizac
 
 ```bash
 npm install
-cp env.example .env      # PowerShell: Copy-Item env.example .env
+cp .env.example .env      # PowerShell: Copy-Item .env.example .env
 npm run dev
 ```
 
@@ -14,7 +14,7 @@ Abre `http://localhost:3000`. Un solo comando levanta front (HTML plano) y backe
 
 > Requiere **Node 20+**. Probado con Node 24, que ejecuta TypeScript nativamente sin paso de build.
 
-## Variables de entorno (`env.example` → `.env`)
+## Variables de entorno (`.env.example` → `.env`)
 
 | Variable | Requerida | Descripción |
 |---|---|---|
@@ -63,23 +63,28 @@ npm test
 ## Arquitectura (hexagonal)
 
 ```
-web/index.html ──HTTP──▶ src/server.ts ──▶ src/app/agent-loop.ts ──▶ src/ports
-   (adaptador in)          (adaptador in)      (caso de uso)          (interfaces)
+web/index.html ──HTTP──▶ src/server.ts ──▶ src/app/agent-loop.ts ──▶ src/llm/adapter.ts
+   (adaptador in)          (adaptador in)      (caso de uso)          (interfaz LLM)
                                                                         ▲
                             src/domain (reglas puras) ──────────────────┤
-                            src/adapters (fs, sap mock, llm) ───────────┘
+                            src/tools (herramientas oc_*) ──────────────┤
+                            src/sap (SapAdapter + mock) ────────────────┤
+                            src/adapters (fs: fixtures, out/) ──────────┘
 ```
 
 | Capa | Contenido | Regla |
 |---|---|---|
 | `src/domain/` | `types.ts`, `controls.ts` (RC1–RC10), `payload.ts`, `cotizacion.ts` | Puro: no conoce HTTP, ni archivos, ni proveedor. Todo lo testeable vive aquí. |
-| `src/ports/` | `SapPort`, `PaqueteSource`, `EvidenciaPort`, `ControlLogPort`, `ArtefactosPort`, `LlmPort` | Interfaces que el dominio/aplicación declara y los adaptadores implementan. |
-| `src/app/` | `agent-loop.ts`, `sessions.ts`, `tools/` | Casos de uso. Las herramientas son la **única** fuente de valores que el agente puede afirmar. |
-| `src/adapters/` | `fixture-source.ts`, `out-store.ts`, `sap-mock.ts`, `llm/openai.ts` | I/O: fixtures de solo lectura, escritura en `out/`, SAP simulado, proveedor LLM. |
+| `src/tools/` | `oc.ts` (herramientas `oc_*`), `index.ts` (registro + zod), `schema.ts` | Contrato de herramientas del PRD 6.2 en la ruta que el instructivo nombra. Única fuente de valores que el agente puede afirmar. |
+| `src/sap/` | `adapter.ts` (`SapAdapter`, obligatoria en el PRD 7.4), `mock.ts` | Interfaz SAP y simulación sobre `out/sap/`. El mock es intercambiable por el adaptador real. |
+| `src/llm/` | `adapter.ts` (interfaz `LlmPort`), `openai.ts` | Proveedor del modelo. Cambiar de proveedor no toca el ciclo del agente. |
+| `src/ports/` | `PaqueteSource`, `EvidenciaPort`, `ControlLogPort`, `ArtefactosPort` | Los puertos restantes del hexágono. |
+| `src/app/` | `agent-loop.ts`, `sessions.ts` | Caso de uso: bucle del agente con tope de iteraciones y sesiones. |
+| `src/adapters/` | `fixture-source.ts`, `out-store.ts` | I/O: fixtures de solo lectura y escritura en `out/`. |
 | `agent/prompt.md` | Comportamiento | Cambiar una regla de conducta no toca código. |
 | `src/knowledge/ordenes-compra.md` | Conocimiento del proceso | Se inyecta al system prompt y se comparte con `modulo/skill/`. |
 
-Separación evaluada por el PRD —**comportamiento** en `agent/prompt.md`, **conocimiento** en `src/knowledge/`, **ejecución** en `src/tools`— respetada: cambiar las reglas de negocio no toca el servidor.
+Separación evaluada por el PRD —**comportamiento** en `agent/prompt.md`, **conocimiento** en `src/knowledge/`, **ejecución** en `src/tools`— respetada con las rutas literales que pide el instructivo: cambiar las reglas de negocio no toca el servidor.
 
 ## Estructura
 
@@ -88,9 +93,12 @@ reto-03/
 ├── agent/prompt.md              # system prompt
 ├── src/
 │   ├── domain/                  # reglas puras + tests
-│   ├── ports/                   # interfaces (hexágono)
-│   ├── app/                     # ciclo del agente, sesiones y herramientas oc_*
-│   ├── adapters/                # fixtures, out/, SAP mock, LLM
+│   ├── tools/                   # herramientas oc_* con zod (PRD 6.2)
+│   ├── sap/                     # SapAdapter (obligatorio, PRD 7.4) + mock
+│   ├── llm/                     # interfaz del proveedor + implementación
+│   ├── ports/                   # interfaces restantes (hexágono)
+│   ├── app/                     # ciclo del agente y sesiones
+│   ├── adapters/                # fixtures y out/
 │   ├── knowledge/               # conocimiento del proceso
 │   └── server.ts                # API HTTP + front estático
 ├── web/index.html               # front de chat (HTML plano)
@@ -99,7 +107,7 @@ reto-03/
 ├── demo.ts                      # verificación sin modelo
 ├── fixtures/                    # entregados por Periferia (solo lectura)
 ├── out/                         # generado en ejecución (no se entrega)
-├── env.example
+├── .env.example
 ├── README.md
 └── SOLUCION.md
 ```

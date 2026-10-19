@@ -19,17 +19,19 @@ Cada compra se digita a mano en SAP (proveedor, descripción, centro de costos, 
                                    │ tope de 25 iteraciones    │
                                    └───────┬───────────┬───────┘
                          ┌─────────────────▼──┐   ┌────▼─────────────────────┐
-                         │ src/ports (hexágono)│   │ src/app/tools/oc.ts      │
-                         │ SapPort, Paquete... │   │ herramientas oc_*        │
+                         │ src/ports (hexágono)│   │ src/tools/oc.ts         │
+                         │ PaqueteSource, ...  │   │ herramientas oc_*        │
                          └───┬─────────┬───────┘   └────┬─────────────────────┘
                              │         │                │
               ┌──────────────▼──┐  ┌───▼────────────┐  ┌▼────────────────────┐
-              │ src/adapters/    │  │ src/adapters/  │  │ src/domain/         │
-              │ fixture-source   │  │ llm/openai     │  │ controls RC1-RC10   │
-              │ out-store        │  │ (compatible    │  │ payload + zod       │
-              │ sap-mock         │  │  OpenAI)       │  │ parsers de texto    │
+              │ src/adapters/    │  │ src/sap/       │  │ src/domain/         │
+              │ fixture-source   │  │ adapter.ts     │  │ controls RC1-RC10   │
+              │ out-store        │  │ mock.ts        │  │ payload + zod       │
+              │                  │  │ src/llm/       │  │ parsers de texto    │
+              │                  │  │ adapter.ts     │  │                     │
+              │                  │  │ openai.ts      │  │                     │
               └──────────────────┘  └────────────────┘  └─────────────────────┘
-                 fixtures/ (RO)         API externa         puro, sin I/O
+                 fixtures/ (RO)      SAP + LLM            puro, sin I/O
                  out/ (escritura)
 ```
 
@@ -37,9 +39,9 @@ Cada compra se digita a mano en SAP (proveedor, descripción, centro de costos, 
 
 - **Comportamiento** → `agent/prompt.md` (system prompt en Markdown, fuera del código). Cambiar cómo pregunta el agente no toca ni una línea de TypeScript.
 - **Conocimiento** → `src/knowledge/ordenes-compra.md`, inyectado al system prompt y compartido con `modulo/skill/`.
-- **Ejecución** → `src/app/tools/oc.ts` (casos de uso) y `src/domain/` (reglas puras).
+- **Ejecución** → `src/tools/oc.ts` (casos de uso) y `src/domain/` (reglas puras).
 
-El hexágono es real, no decorativo: `src/domain/controls.ts` no importa nada de Node. Los tests de RC1–RC10 y del payload corren sin tocar disco salvo para leer el fixture. El SAP mock y el proveedor LLM son intercambiables porque solo implementan `SapPort` y `LlmPort`.
+El hexágono es real, no decorativo: `src/domain/controls.ts` no importa nada de Node. Los tests de RC1–RC10 y del payload corren sin tocar disco salvo para leer el fixture. El SAP mock y el proveedor LLM son intercambiables porque solo implementan `SapAdapter` (`src/sap/adapter.ts`, ruta que el PRD 7.4 marca como obligatoria) y `LlmPort` (`src/llm/adapter.ts`).
 
 ## 3. Ciclo del agente
 

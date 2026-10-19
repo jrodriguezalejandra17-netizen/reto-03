@@ -8,7 +8,7 @@ import { existsSync, readFileSync } from "node:fs"
 import { extname, join, normalize } from "node:path"
 import { Agente } from "./app/agent-loop.ts"
 import { SessionStore } from "./app/sessions.ts"
-import { OpenAiCompatibleLlm } from "./adapters/llm/openai.ts"
+import { OpenAiCompatibleLlm } from "./llm/openai.ts"
 
 const directory = import.meta.dirname.replace(/[\\/]src$/, "")
 cargarEnv(join(directory, ".env"))

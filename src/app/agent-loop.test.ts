@@ -7,7 +7,7 @@ import { describe, it } from "node:test"
 import assert from "node:assert/strict"
 import { join } from "node:path"
 import { Agente, MAX_ITERACIONES } from "./agent-loop.ts"
-import type { LlmMensaje, LlmPort, LlmRespuesta, LlmToolDef } from "../ports/index.ts"
+import type { LlmMensaje, LlmPort, LlmRespuesta, LlmToolDef } from "../llm/adapter.ts"
 
 const directory = join(import.meta.dirname, "..", "..")
 

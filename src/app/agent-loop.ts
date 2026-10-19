@@ -5,8 +5,8 @@
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import type { LlmMensaje, LlmPort, LlmRespuesta } from "../ports/index.ts"
-import { definicionesParaModelo, herramientas, registrarLog, validarArgs } from "./tools/index.ts"
+import type { LlmMensaje, LlmPort, LlmRespuesta } from "../llm/adapter.ts"
+import { definicionesParaModelo, herramientas, registrarLog, validarArgs } from "../tools/index.ts"
 
 export const MAX_ITERACIONES = 25
 

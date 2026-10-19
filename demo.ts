@@ -13,7 +13,7 @@
 
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { herramientas, registrarLog, validarArgs } from "./src/app/tools/index.ts"
+import { herramientas, registrarLog, validarArgs } from "./src/tools/index.ts"
 import { OutStore } from "./src/adapters/out-store.ts"
 import { FixtureSource } from "./src/adapters/fixture-source.ts"
 

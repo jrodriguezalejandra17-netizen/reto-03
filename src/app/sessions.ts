@@ -4,7 +4,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import type { LlmMensaje } from "../ports/index.ts"
+import type { LlmMensaje } from "../llm/adapter.ts"
 
 export type SesionPersistida = {
   id: string
