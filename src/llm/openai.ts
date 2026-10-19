@@ -11,8 +11,10 @@ type OpenAiToolCall = {
   id: string
   type: "function"
   function: { name: string; arguments: string }
-  // Google (Gemini 3.x) exige reenviar esta firma al reconstruir el historial de
-  // tool calls; sin ella la API responde 400. En otros proveedores no existe.
+  // Google (Gemini 3.x) entrega la firma pensada dentro de `extra_content` y
+  // exige reenviarla al reconstruir el historial; sin ella responde 400.
+  // Otros proveedores no envían este campo.
+  extra_content?: { thought_signature?: string }
   thought_signature?: string
 }
 
@@ -96,7 +98,7 @@ export class OpenAiCompatibleLlm implements LlmPort {
         id: tc.id,
         nombre: tc.function.name,
         args: parseArgs(tc.function.arguments),
-        firma: tc.thought_signature ?? mensaje.thought_signature,
+        firma: tc.extra_content?.thought_signature ?? tc.thought_signature ?? mensaje.thought_signature,
       })),
     }
   }
@@ -117,7 +119,7 @@ function aOpenAi(mensaje: LlmMensaje): OpenAiMensaje {
         id: tc.id,
         type: "function",
         function: { name: tc.nombre, arguments: JSON.stringify(tc.args) },
-        ...(tc.firma ? { thought_signature: tc.firma } : {}),
+        ...(tc.firma ? { extra_content: { thought_signature: tc.firma } } : {}),
       })),
       ...(firma ? { thought_signature: firma } : {}),
     }
