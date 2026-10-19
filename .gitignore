@@ -1,0 +1,8 @@
+node_modules/
+out/
+.env
+*.log
+out-*.log
+out-*.err
+out-server.log
+out-server.err

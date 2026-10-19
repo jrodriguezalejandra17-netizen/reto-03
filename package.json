@@ -1,0 +1,19 @@
+﻿{
+    "name":  "reto-03-oc-sap-agent",
+    "version":  "1.0.0",
+    "private":  true,
+    "type":  "module",
+    "engines":  {
+                    "node":  "\u003e=20"
+                },
+    "scripts":  {
+                    "dev":  "node --watch src/server.ts",
+                    "start":  "node src/server.ts",
+                    "demo":  "node demo.ts",
+                    "test":  "node --test src/domain/*.test.ts src/app/*.test.ts",
+                    "sync:modulo":  "node scripts/sync-modulo.mjs"
+                },
+    "dependencies":  {
+                         "zod":  "^3.24.1"
+                     }
+}
