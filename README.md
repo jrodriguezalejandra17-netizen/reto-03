@@ -124,6 +124,26 @@ modulo/
 <!-- Completar con la URL pública antes de la entrega -->
 _URL pública pendiente de despliegue._
 
+### Cómo desplegarlo
+
+La app no tiene paso de build (Node 24 ejecuta TypeScript directo), así que cualquier host sirve:
+
+**Opción A — host de Node (Render, Railway, Fly, Cloud Run), sin Docker.**
+
+| Ajuste | Valor |
+|---|---|
+| Repositorio | este repo |
+| Build command | `npm install` |
+| Start command | `npm start` |
+| Puerto | el host inyecta `PORT`; `src/server.ts` ya lo lee |
+| Variables de entorno | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` |
+
+**Opción B — contenedor.** Hay un `Dockerfile` listo en la raíz (`docker build -t reto-03 .`). **No está validado en esta máquina porque Docker no está instalado aquí** — si vas por esta vía, probalo antes de la entrega.
+
+En ambos casos el despliegue **necesita la clave del modelo** como variable de entorno del host; sin ella `/api/health` responde `llm_configured: false` y `/api/chat` devuelve HTTP 503 con un mensaje claro (las reglas de negocio y `npm run demo` funcionan igual, porque no dependen del modelo).
+
+> Nota: en hosts con sistema de archivos efímero, `out/` (evidencia, `control.csv`, órdenes del SAP simulado) se reinicia en cada despliegue. Para persistirlo, montá un volumen en `/app/out`.
+
 ## Uso de IA
 
 Ver sección 11 de `SOLUCION.md`.
