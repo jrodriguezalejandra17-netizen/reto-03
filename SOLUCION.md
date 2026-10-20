@@ -58,11 +58,21 @@ El hexágono es real, no decorativo: `src/domain/controls.ts` no importa nada de
 
 ## 4. Elección del modelo
 
-**Proveedor**: cualquiera compatible con la API de OpenAI, configurable por `LLM_BASE_URL`. Por defecto `gpt-4o-mini`.
+**Proveedor**: cualquiera compatible con la API de OpenAI, configurable por `LLM_BASE_URL`. El despliegue desplegado usa **Google Gemini `gemini-3.1-flash-lite`** vía el endpoint OpenAI-compatible (`https://generativelanguage.googleapis.com/v1beta/openai/`).
 
-**Por qué**: el trabajo del modelo aquí es *orquestar* (leer un paquete, llamar 4 herramientas en orden, explicar el resultado), no razonar sobre grandes volúmenes. Un modelo pequeño y barato con *tool calling* correcto es suficiente y el adaptador permite cambiar de proveedor sin tocar el ciclo del agente. `temperature: 0.1` para que la secuencia de llamadas sea estable.
+**Por qué**: el trabajo del modelo aquí es *orquestar* (leer un paquete, llamar 5 herramientas en orden, explicar el resultado), no razonar sobre grandes volúmenes. Un modelo pequeño y con *tool calling* correcto es suficiente, y el adaptador permite cambiar de proveedor sin tocar el ciclo del agente. `temperature: 0.1` para que la secuencia de llamadas sea estable.
 
-**Costo estimado por caso**: el agente hace ~5 iteraciones, con un paquete de ~2 KB de entrada y respuestas cortas → del orden de **8–12 k tokens de entrada y ~1 k de salida por caso**. Con `gpt-4o-mini` (≈ $0,15 / M entrada, $0,60 / M salida) son **≈ $0,002 por caso**, unos **$2 por cada 1.000 órdenes de compra**. Los topes de iteraciones (25) y de tamaño de la petición (1 MB) acotan el gasto por sesión.
+**Por qué `gemini-3.1-flash-lite` y no otro**: el agente hace ~5–6 iteraciones por caso y cada iteración reenvía el contexto completo (prompt + conocimiento + esquemas de herramientas + paquete). En el **plan free**:
+
+| Modelo (free tier) | RPD | Nota |
+|---|---|---|
+| Groq `openai/gpt-oss-120b` | 1.000 | Pero **8.000 TPM**: un solo turno (5–6 iteraciones × 4–6 k tokens) agota el minuto y devuelve 429 a mitad del bucle. Inviable para una demo en vivo. |
+| Gemini `gemini-3.8-flash` | **20** | Se agota en ~3 casos por día; el proyecto llegó a 26/20. |
+| **Gemini `gemini-3.1-flash-lite`** | **500** | 25× más margen que el 3.8 Flash; soporta *tool calling* y thought signatures (Gemini 3). |
+
+Los modelos **Flash-Lite** son el camino que Google recomienda justamente para experimentación y evaluación. Gemini 3 exige reenviar el mensaje del proveedor *verbatim* (trae `extra_content.thought_signature`): si no, responde 400. El adaptador guarda y reproduce ese mensaje original — ver `src/llm/adapter.ts` y `src/app/agent-loop.ts`.
+
+**Costo estimado por caso**: ~5 iteraciones, un paquete de ~2 KB de entrada y respuestas cortas → del orden de **8–12 k tokens de entrada y ~1 k de salida por caso**. En el plan free es **$0**; con Gemini 3.8 Flash pago (≈ $0,30 / M entrada, $2,50 / M salida) son **≈ $0,006 por caso**, unos **$6 por cada 1.000 órdenes de compra**. Los topes de iteraciones (25) y de tamaño de la petición (1 MB) acotan el gasto por sesión.
 
 ## 5. Matriz de controles
 

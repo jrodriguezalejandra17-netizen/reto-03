@@ -19,11 +19,13 @@ Abre `http://localhost:3000`. Un solo comando levanta front (HTML plano) y backe
 | Variable | Requerida | Descripción |
 |---|---|---|
 | `LLM_API_KEY` | Sí, para el chat | Clave del proveedor. **Nunca** se expone al front, ni a los logs, ni a las respuestas de la API. |
-| `LLM_BASE_URL` | No | Endpoint compatible con OpenAI (por defecto `https://api.openai.com/v1`). Sirve para Azure, Groq, Mistral o un servidor local. |
-| `LLM_MODEL` | No | Modelo a usar (por defecto `gpt-4o-mini`). |
+| `LLM_BASE_URL` | No | Endpoint compatible con OpenAI. Por defecto `https://api.openai.com/v1`; sirve para Gemini, Groq, Azure, Mistral o un servidor local. |
+| `LLM_MODEL` | No | Modelo a usar (por defecto `gpt-4o-mini`). El despliegue usa `gemini-3.1-flash-lite`. |
 | `PORT` | No | Puerto del servidor (por defecto `3000`). |
 
 El archivo `.env` está en `.gitignore` y no se entrega.
+
+> **¿Qué modelo usar en producción?** El trabajo del agente es *orquestar* llamadas a herramientas, no razonar sobre grandes volúmenes: cualquier modelo con tool calling correcto alcanza. Cada caso consume ~5–6 request (una por iteración) y cada iteración reenvía el contexto completo, así que el límite que importa es el de **requests por minuto/día**, no el de tokens. Con el plan free, `gemini-3.1-flash-lite` ofrece 500 RPD frente a los 20 de `gemini-3.8-flash` — de ahí la elección. Ver §4 de `SOLUCION.md` para la comparación completa.
 
 ## Verificación sin modelo
 
@@ -129,7 +131,7 @@ modulo/
 
 ## Link de prueba
 
-**https://reto-03.onrender.com** — desplegado en Render, conectado a `openai/gpt-oss-120b` vía Groq.
+**https://reto-03.onrender.com** — desplegado en Render con `gemini-3.1-flash-lite` (endpoint OpenAI-compatible de Google).
 
 ### Cómo desplegarlo
 
@@ -143,7 +145,7 @@ La app no tiene paso de build (Node 24 ejecuta TypeScript directo), así que cua
 | Build command | `npm install` |
 | Start command | `npm start` |
 | Puerto | el host inyecta `PORT`; `src/server.ts` ya lo lee |
-| Variables de entorno | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` |
+| Variables de entorno | `LLM_API_KEY`, `LLM_BASE_URL` (`https://generativelanguage.googleapis.com/v1beta/openai/`), `LLM_MODEL` (`gemini-3.1-flash-lite`) |
 
 **Opción B — contenedor.** Hay un `Dockerfile` listo en la raíz (`docker build -t reto-03 .`). **No está validado en esta máquina porque Docker no está instalado aquí** — si vas por esta vía, probalo antes de la entrega.
 
