@@ -10,7 +10,15 @@
 
 export type LlmMensaje =
   | { rol: "system" | "user"; contenido: string }
-  | { rol: "assistant"; contenido: string | null; toolCalls?: LlmToolCall[] }
+  | {
+      rol: "assistant"
+      contenido: string | null
+      toolCalls?: LlmToolCall[]
+      // Mensaje original devuelto por el proveedor. Gemini 3.x exige reenviar
+      // exactamente ese objeto (trae `extra_content.thought_signature`); si no,
+      // responde 400. Se guarda tal cual para poder reproducirlo en el historial.
+      crudo?: unknown
+    }
   | { rol: "tool"; toolCallId: string; nombre: string; contenido: string }
 
 export type LlmToolCall = {
@@ -31,6 +39,8 @@ export type LlmToolDef = {
 export type LlmRespuesta = {
   contenido: string | null
   toolCalls: LlmToolCall[]
+  // Mensaje original del proveedor (verbatim). Ver comentario en LlmMensaje.
+  crudo?: unknown
 }
 
 export interface LlmPort {

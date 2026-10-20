@@ -65,7 +65,14 @@ export class Agente {
         return { reply: texto, toolCalls: visibles, needsConfirmation: pendienteConfirmacion }
       }
 
-      sesion.mensajes.push({ rol: "assistant", contenido: respuesta.contenido, toolCalls: respuesta.toolCalls })
+      sesion.mensajes.push({
+        rol: "assistant",
+        contenido: respuesta.contenido,
+        toolCalls: respuesta.toolCalls,
+        // Se conserva el mensaje original del proveedor para poder reenviarlo
+        // verbatim en la siguiente iteración (Gemini 3.x lo exige).
+        crudo: respuesta.crudo,
+      })
 
       for (const llamada of respuesta.toolCalls) {
         const herramienta = herramientas[llamada.nombre]

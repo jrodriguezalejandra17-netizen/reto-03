@@ -94,6 +94,7 @@ export class OpenAiCompatibleLlm implements LlmPort {
 
     return {
       contenido: mensaje.content ?? null,
+      crudo: mensaje,
       toolCalls: (mensaje.tool_calls ?? []).map((tc): LlmToolCall => ({
         id: tc.id,
         nombre: tc.function.name,
@@ -109,8 +110,12 @@ function aOpenAi(mensaje: LlmMensaje): OpenAiMensaje {
     return { role: "tool", tool_call_id: mensaje.toolCallId, content: mensaje.contenido }
   }
   if (mensaje.rol === "assistant") {
-    // Solo se reenvía la firma si el proveedor la devolvió (Gemini 3.x). Como
-    // JSON.stringify omite `undefined`, los demás proveedores no la ven.
+    // Si el proveedor devolvió su mensaje original, se reenvía verbatim:
+    // es la única forma comprobada de conservar `extra_content.thought_signature`
+    // (Gemini 3.x responde 400 si la firma falta).
+    if (mensaje.crudo) return mensaje.crudo as OpenAiMensaje
+    // Sin crudo, se reconstruye y se reenvía la firma si el proveedor la tuvo.
+    // JSON.stringify omite `undefined`, así que el resto de proveedores no la ven.
     const firma = mensaje.toolCalls?.[0]?.firma
     return {
       role: "assistant",
