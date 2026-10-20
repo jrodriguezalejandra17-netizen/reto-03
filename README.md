@@ -129,8 +129,7 @@ modulo/
 
 ## Link de prueba
 
-<!-- Completar con la URL pública antes de la entrega -->
-_URL pública pendiente de despliegue._
+**https://reto-03.onrender.com** — desplegado en Render, conectado a `openai/gpt-oss-120b` vía Groq.
 
 ### Cómo desplegarlo
 
